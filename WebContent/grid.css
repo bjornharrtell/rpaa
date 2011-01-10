@@ -1,0 +1,19 @@
+.rpaa-action-subjectadd {
+	background-image: url('light-bulb--plus.png') !important
+}
+
+.rpaa-action-categoryadd {
+	background-image: url('drawer--plus.png') !important
+}
+
+.rpaa-action-vote {
+	background-image: url('thumb-up.png') !important
+}
+
+.rpaa-action-principalset {
+	background-image: url('medal.png') !important
+}
+
+.rpaa-action-delete {
+	background-image: url('cross.png') !important
+}
