@@ -22,9 +22,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import entities.grid.Vote;
 import entities.grid.Vote_;
-import entities.tree.Edge;
-import entities.tree.Edge_;
-import entities.tree.Vertex;
 
 @Stateless
 @Path("/users")
