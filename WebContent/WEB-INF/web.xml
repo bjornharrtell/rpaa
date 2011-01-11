@@ -17,7 +17,7 @@
 		</init-param>
 		<init-param>
 			<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
-			<param-value>false</param-value>
+			<param-value>true</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
@@ -37,7 +37,7 @@
             <http-method>POST</http-method>
         </web-resource-collection>
         <auth-constraint>
-            <role-name>treevote</role-name>
+            <role-name>rpaa</role-name>
         </auth-constraint>
     </security-constraint>
     

@@ -4,8 +4,8 @@
   <context-root>/rpaa</context-root>
   <class-loader delegate="true"/>
   <security-role-mapping>
-    <role-name>treevote</role-name>
-    <group-name>treevote</group-name>
+    <role-name>rpaa</role-name>
+    <group-name>rpaa</group-name>
   </security-role-mapping>
   <jsp-config>
     <property name="keepgenerated" value="true">

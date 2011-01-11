@@ -21,6 +21,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import entities.grid.Category;
 import entities.grid.Subject;
+import extjs.FormResult;
 
 @Path("/categories")
 @Stateless
@@ -49,19 +50,16 @@ public class CategoriesResource {
 		return jsonData;
 	}
 	
-	/*@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	public void createCategory(Category category)  {
-		em.persist(category);
-	}*/
-	
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public void createCategory(final MultivaluedMap<String, String> formParameters) {
+	@Produces(MediaType.APPLICATION_JSON)
+	public FormResult createCategory(final MultivaluedMap<String, String> formParameters) {
 		String name = formParameters.get("name").get(0);
 		
 		Category category = new Category(name);
 		
 		em.persist(category);
+		
+		return new FormResult(true);
 	}
 }
