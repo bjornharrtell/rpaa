@@ -1,4 +1,6 @@
-Grid = {};
+Grid = {
+	version: '0.9.0' 
+};
 
 Grid.init = function() {
 
