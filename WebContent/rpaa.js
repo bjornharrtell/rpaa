@@ -1,5 +1,24 @@
 Grid = {
-	version: '0.9.1' 
+	version : '0.9.1'
+};
+
+Grid.categoriesStore = null;
+Grid.preload = function() {
+	Grid.categoriesStore = new Ext.data.JsonStore({
+		root : 'rows',
+		fields : [ 'id', 'name' ],
+		autoLoad : true,
+		proxy : new Ext.data.HttpProxy({
+			method : 'GET',
+			url : 'jaxrs/categories'
+		})
+	});
+
+	var onLoad = function() {
+		Grid.init();
+		Grid.categoriesStore.un('load', onLoad);
+	};
+	Grid.categoriesStore.on('load', onLoad);
 };
 
 Grid.init = function() {
@@ -44,16 +63,6 @@ Grid.init = function() {
 		})
 	});
 
-	var categoriesStore = new Ext.data.JsonStore({
-		root : 'rows',
-		fields : [ 'id', 'name' ],
-		autoLoad : true,
-		proxy : new Ext.data.HttpProxy({
-			method : 'GET',
-			url : 'jaxrs/categories'
-		})
-	});
-
 	var colModel = new Ext.grid.ColumnModel({
 		defaults : {
 			width : 120,
@@ -75,7 +84,14 @@ Grid.init = function() {
 			dataIndex : 'category',
 			hidden : true,
 			editable : false,
-			width : 34
+			width : 34,
+			renderer : function(value) {
+				if (value === null) {
+					return "Ingen";
+				}
+
+				return Grid.categoriesStore.getById(value).get("name");
+			}
 		}, {
 			header : 'Röster',
 			dataIndex : 'votes',
@@ -87,12 +103,17 @@ Grid.init = function() {
 	var subjectAddWindowOnSubmit = function() {
 		var window = this.ownerCt.ownerCt.ownerCt;
 		var form = this.ownerCt.ownerCt.getForm();
+		var values = form.getValues();
 
-		form.submit({
+		Ext.Ajax.request({
+			url : 'jaxrs/subjects',
+			jsonData : values,
 			success : function(form, action) {
 				store.reload();
 				form.reset();
 				window.hide();
+				
+				// TODO: do another request to set the category on subject
 			}
 		});
 	};
@@ -117,17 +138,17 @@ Grid.init = function() {
 				fieldLabel : 'Namn',
 				anchor : '95%'
 			}, {
-				name : 'category',
+				submitValue : false,
 				xtype : 'combo',
 				fieldLabel : 'Kategori',
 				anchor : '95%',
-				store : categoriesStore,
+				store : Grid.categoriesStore,
 				triggerAction : 'all',
 				valueField : 'id',
 				displayField : 'name',
-				typeAhead: true,
-		        forceSelection: true,
-				emptyText: 'Okänd'
+				typeAhead : true,
+				forceSelection : true,
+				emptyText : 'Okänd'
 			} ],
 			buttons : [ {
 				text : 'Spara',
@@ -140,12 +161,12 @@ Grid.init = function() {
 		var window = this.ownerCt.ownerCt.ownerCt;
 		var form = this.ownerCt.ownerCt.getForm();
 		var values = form.getValues();
-		
+
 		Ext.Ajax.request({
-			url: 'jaxrs/categories',
-			jsonData: values, 
+			url : 'jaxrs/categories',
+			jsonData : values,
 			success : function(form, action) {
-				categoriesStore.reload();
+				Grid.categoriesStore.reload();
 				form.reset();
 				window.hide();
 			}
@@ -211,7 +232,7 @@ Grid.init = function() {
 
 	var onDelete = function() {
 		store.remove(selectedRecord);
-		
+
 		if (selectedRecord.get("votes") > 0) {
 			Ext.Ajax.request({
 				url : 'jaxrs/users/current',
@@ -222,7 +243,7 @@ Grid.init = function() {
 				}
 			});
 		}
-		
+
 		var sm = viewport.grid.getSelectionModel();
 		sm.selectRow(sm.last, false);
 	};
@@ -232,7 +253,7 @@ Grid.init = function() {
 		items : [ {
 			ref : 'grid',
 			xtype : 'editorgrid',
-			border: false,
+			border : false,
 			store : store,
 			colModel : colModel,
 			viewConfig : new Ext.grid.GroupingView({
@@ -296,4 +317,4 @@ Grid.init = function() {
 	});
 };
 
-Ext.onReady(Grid.init);
+Ext.onReady(Grid.preload);

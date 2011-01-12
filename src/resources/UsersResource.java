@@ -17,9 +17,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-
+import entities.User;
 import entities.Vote;
 import entities.Vote_;
 
@@ -35,13 +33,12 @@ public class UsersResource {
 	@GET
 	@Path("/current")
 	@Produces(MediaType.APPLICATION_JSON)
-	public JSONObject getCurrentUser() throws JSONException {
+	public User getCurrentUser() {
 		String principal = securityContext.getUserPrincipal().getName();
-
-		JSONObject user = new JSONObject();
 
 		int votesLeft = 3;
 
+		// TODO: make this a named query
 		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
 		CriteriaQuery<Vote> criteriaQuery = criteriaBuilder.createQuery(Vote.class);
 		Root<Vote> p = criteriaQuery.from(Vote.class);
@@ -52,9 +49,6 @@ public class UsersResource {
 
 		votesLeft = votesLeft - votes.size();
 
-		user.put("principal", principal);
-		user.put("votesLeft", votesLeft);
-
-		return user;
+		return new User(principal, votesLeft);
 	}
 }

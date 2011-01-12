@@ -33,6 +33,7 @@ import entities.Category;
 import entities.Category_;
 import entities.Subject;
 import entities.Vote;
+import extjs.JsonReaderData;
 
 @Path("/subjects")
 @Stateless
@@ -46,19 +47,18 @@ public class SubjectsResource {
 	@GET
 	@Path("/{subjectid}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public JSONObject getSubject(@PathParam("subjectid") String subjectId) throws JSONException {
-		Subject subject = em.find(Subject.class, Integer.parseInt(subjectId));
-
-		return subject.toJSONObject();
+	public Subject getSubject(@PathParam("subjectid") String id) {
+		return em.find(Subject.class, Integer.parseInt(id));
 	}
 
 	@PUT
 	@Path("/{subjectid}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void updateSubject(@PathParam("subjectid") String subjectId, JSONObject rows) throws JSONException {
+	public void updateSubject(@PathParam("subjectid") String id, JSONObject rows) throws JSONException {
+		// TODO: make client PUT deserializable data		
 		JSONObject subjectData = rows.getJSONObject("rows");
 
-		Subject subject = em.find(Subject.class, Integer.parseInt(subjectId));
+		Subject subject = em.find(Subject.class, Integer.parseInt(id));
 
 		if (subjectData.has("name"))
 			subject.setName(subjectData.getString("name"));
@@ -68,39 +68,17 @@ public class SubjectsResource {
 
 	@DELETE
 	@Path("/{subjectid}")
-	public void updateSubject(@PathParam("subjectid") String subjectId) throws JSONException {
-		Subject subject = em.find(Subject.class, Integer.parseInt(subjectId));
-
-		em.remove(subject);
+	public void deleteSubject(@PathParam("subjectid") String id) throws JSONException {
+		em.remove(em.find(Subject.class, Integer.parseInt(id)));
 	}
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public JSONObject getSubjects() throws JSONException {
-
-		Query query = em.createNamedQuery("findAllSubjects");
-
-		List<Subject> subjects = query.getResultList();
-
-		JSONObject jsonData = new JSONObject();
-		JSONArray rows = new JSONArray();
-
-		for (Subject subject : subjects) {
-			JSONObject row = new JSONObject();
-			rows.put(subject.toJSONObject());
-		}
-		jsonData.put("rows", rows);
-
-		return jsonData;
+	public JsonReaderData getSubjects() throws JSONException {
+		return new JsonReaderData(em.createNamedQuery("findAllSubjects").getResultList());
 	}
 
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	public void createSubject(Subject subject) {
-		em.persist(subject);
-	}
-
-	@POST
+	/*@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public JSONObject createSubject(final MultivaluedMap<String, String> formParameters) throws JSONException {
@@ -129,43 +107,19 @@ public class SubjectsResource {
 		JSONObject jsonData = new JSONObject();
 		jsonData.put("success", true);
 		jsonData.put("id", subject.getId());
-		jsonData.put("subject", subject.toJSONObject());
 		
 		return jsonData;
-	}
+	}*/
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public JSONObject createSubject(JSONObject subjectData) throws JSONException {
-		String name = subjectData.getString("name");
-		String categoryName = subjectData.getString("category");
-		String principal = securityContext.getUserPrincipal().getName();
+	public Response createSubject(Subject subject) throws JSONException {
+		subject.setPrincipal(securityContext.getUserPrincipal().getName());
 
-		CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
-		CriteriaQuery<Category> criteriaQuery = criteriaBuilder.createQuery(Category.class);
-		Root<Category> p = criteriaQuery.from(Category.class);
-		Predicate condition = criteriaBuilder.equal(p.get(Category_.name), categoryName);
-		criteriaQuery.where(condition);
-		TypedQuery<Category> query = em.createQuery(criteriaQuery);
-
-		Category category = null;
-		try {
-			category = query.getSingleResult();
-		} catch (javax.persistence.NoResultException e) {
-
-		}
-
-		Subject subject = new Subject(name, category, principal);
 		em.persist(subject);
-		em.flush();
-
-		JSONObject jsonData = new JSONObject();
-		jsonData.put("success", true);
-		jsonData.put("id", subject.getId());
-		jsonData.put("subject", subject.toJSONObject());
 		
-		return jsonData;
+		return Response.created(null).build();
 	}
 
 	@POST
