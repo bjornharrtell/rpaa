@@ -139,7 +139,11 @@ Grid.init = function() {
 	var categoryAddWindowOnSubmit = function() {
 		var window = this.ownerCt.ownerCt.ownerCt;
 		var form = this.ownerCt.ownerCt.getForm();
-		form.submit({
+		var values = form.getValues();
+		
+		Ext.Ajax.request({
+			url: 'jaxrs/categories',
+			jsonData: values, 
 			success : function(form, action) {
 				categoriesStore.reload();
 				form.reset();
@@ -228,7 +232,7 @@ Grid.init = function() {
 		items : [ {
 			ref : 'grid',
 			xtype : 'editorgrid',
-			frame : true,
+			border: false,
 			store : store,
 			colModel : colModel,
 			viewConfig : new Ext.grid.GroupingView({

@@ -1,0 +1,9 @@
+RPÄA - Rösta-på-ämnen-applikation
+
+This project was made as self education and can be used to catalog subjects with voting-features.
+
+Requires an Java EE 6 container and is tested with  Glassfish 3.0.1
+
+On Glassfish 3.0.1 permissions for reflection needs to be added (glassfish/domains/domain1/config/server.policy):  
+
+ permission java.lang.reflect.ReflectPermission "suppressAccessChecks";

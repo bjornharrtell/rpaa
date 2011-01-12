@@ -62,4 +62,11 @@ public class CategoriesResource {
 		
 		return new FormResult(true);
 	}
+	
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public void createCategory(Category category) {		
+		em.persist(category);
+	}
 }
