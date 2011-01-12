@@ -20,8 +20,8 @@ import javax.ws.rs.core.SecurityContext;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import entities.grid.Vote;
-import entities.grid.Vote_;
+import entities.Vote;
+import entities.Vote_;
 
 @Stateless
 @Path("/users")

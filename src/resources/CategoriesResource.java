@@ -19,8 +19,8 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import entities.grid.Category;
-import entities.grid.Subject;
+import entities.Category;
+import entities.Subject;
 import extjs.FormResult;
 
 @Path("/categories")

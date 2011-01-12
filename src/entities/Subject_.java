@@ -1,4 +1,4 @@
-package entities.grid;
+package entities;
 
 import javax.annotation.Generated;
 import javax.persistence.metamodel.ListAttribute;

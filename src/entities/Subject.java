@@ -1,4 +1,4 @@
-package entities.grid;
+package entities;
 
 import java.util.List;
 

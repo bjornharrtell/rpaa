@@ -29,10 +29,10 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import entities.grid.Category;
-import entities.grid.Category_;
-import entities.grid.Subject;
-import entities.grid.Vote;
+import entities.Category;
+import entities.Category_;
+import entities.Subject;
+import entities.Vote;
 
 @Path("/subjects")
 @Stateless
