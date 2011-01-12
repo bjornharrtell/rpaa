@@ -1,5 +1,5 @@
 Grid = {
-	version: '0.9.0' 
+	version: '0.9.1' 
 };
 
 Grid.init = function() {
