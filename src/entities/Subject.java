@@ -15,6 +15,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 @Entity
 @Table(name = "subjects", uniqueConstraints = @UniqueConstraint(columnNames = { "name" }))
 @NamedQuery(name = "findAllSubjects", query = "select s from Subject s order by s.name")
@@ -78,6 +80,7 @@ public class Subject {
 		return id;
 	}
 	
+	@JsonIgnore
 	public void setCategory(Category category) {
 		this.category = category;
 	}

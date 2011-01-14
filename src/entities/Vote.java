@@ -49,4 +49,7 @@ public class Vote {
 		return principal;
 	}
 
+	public int getId() {
+		return id;
+	}
 }

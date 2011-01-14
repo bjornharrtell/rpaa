@@ -18,6 +18,7 @@ Grid.preload = function() {
 		Grid.init();
 		Grid.categoriesStore.un('load', onLoad);
 	};
+
 	Grid.categoriesStore.on('load', onLoad);
 };
 
@@ -46,15 +47,14 @@ Grid.init = function() {
 			fields : [ 'id', {
 				name : 'name',
 				type : 'string'
-			}, 'category', 'principal', {
+			}, 'category', {
+				name : 'principal',
+				type : 'string'
+			}, {
 				name : 'votes',
 				type : 'int'
 			} ]
 		}),
-		writer : new Ext.data.JsonWriter({
-			encode : false
-		}),
-		restful : true,
 		groupField : 'category',
 		autoLoad : true,
 		proxy : new Ext.data.HttpProxy({
@@ -89,7 +89,6 @@ Grid.init = function() {
 				if (value === null) {
 					return "Ingen";
 				}
-
 				return Grid.categoriesStore.getById(value).get("name");
 			}
 		}, {
@@ -104,16 +103,31 @@ Grid.init = function() {
 		var window = this.ownerCt.ownerCt.ownerCt;
 		var form = this.ownerCt.ownerCt.getForm();
 		var values = form.getValues();
+		var category = this.ownerCt.ownerCt.categoryCombo.getValue();
 
 		Ext.Ajax.request({
 			url : 'jaxrs/subjects',
 			jsonData : values,
-			success : function(form, action) {
-				store.reload();
-				form.reset();
-				window.hide();
-				
-				// TODO: do another request to set the category on subject
+			success : function(response) {
+				var id = parseInt(response.responseText);
+
+				var subjectData = Ext.applyIf({
+					id : id,
+					category : category,
+					principal: user.principal,
+					votes: 0
+				}, values);
+				var record = new store.recordType(subjectData);
+				store.add(record);
+
+				Ext.Ajax.request({
+					url : 'jaxrs/categories/' + category + '/subjects',
+					jsonData : subjectData,
+					success : function(response) {
+						form.reset();
+						window.hide();
+					}
+				});
 			}
 		});
 	};
@@ -138,7 +152,9 @@ Grid.init = function() {
 				fieldLabel : 'Namn',
 				anchor : '95%'
 			}, {
-				submitValue : false,
+				ref : 'categoryCombo',
+				hiddenName : 'category',
+				// submitValue : false,
 				xtype : 'combo',
 				fieldLabel : 'Kategori',
 				anchor : '95%',
@@ -165,8 +181,11 @@ Grid.init = function() {
 		Ext.Ajax.request({
 			url : 'jaxrs/categories',
 			jsonData : values,
-			success : function(form, action) {
-				Grid.categoriesStore.reload();
+			success : function(response) {
+				var record = new Grid.categoriesStore.recordType(Ext.apply({
+					id : parseInt(response.responseText)
+				}, values));
+				Grid.categoriesStore.add(record);
 				form.reset();
 				window.hide();
 			}
@@ -233,6 +252,11 @@ Grid.init = function() {
 	var onDelete = function() {
 		store.remove(selectedRecord);
 
+		Ext.Ajax.request({
+			url : 'jaxrs/subjects/' + selectedRecord.get('id'),
+			method : 'DELETE'
+		});
+
 		if (selectedRecord.get("votes") > 0) {
 			Ext.Ajax.request({
 				url : 'jaxrs/users/current',
@@ -246,6 +270,19 @@ Grid.init = function() {
 
 		var sm = viewport.grid.getSelectionModel();
 		sm.selectRow(sm.last, false);
+	};
+	
+	var onAfteredit = function(e) {
+		var record = e.record;
+		
+		Ext.Ajax.request({
+			url : 'jaxrs/subjects/' + record.id,
+			method : 'PUT',
+			jsonData: record.data,
+			success : function() {
+				
+			}
+		});
 	};
 
 	var viewport = new Ext.Viewport({
@@ -266,6 +303,9 @@ Grid.init = function() {
 					rowselect : onRowselect
 				}
 			}),
+			listeners: {
+				'afteredit': onAfteredit
+			},
 			tbar : [ '-', {
 				iconCls : 'rpaa-action-subjectadd',
 				tooltip : 'Lägg till ämne',

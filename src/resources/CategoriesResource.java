@@ -7,11 +7,14 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+
+import org.codehaus.jettison.json.JSONObject;
 
 import entities.Category;
+import entities.Subject;
 import extjs.JsonReaderData;
 
 @Path("/categories")
@@ -28,9 +31,24 @@ public class CategoriesResource {
 	
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response createCategory(Category category) {		
+	@Produces(MediaType.TEXT_PLAIN)
+	public String createCategory(Category category) {		
 		em.persist(category);
+		em.flush();
 		
-		return Response.created(null).build();
+		return Integer.toString(category.getId());
+	}
+	
+	@POST
+	@Path("/{id}/subjects")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public void addSubject(@PathParam("id") String id, JSONObject subjectData) throws Exception {
+		int subjectId = subjectData.getInt("id");
+		
+		Category category = em.find(Category.class, Integer.parseInt(id));
+		Subject subject = em.find(Subject.class, subjectId);
+		
+		category.addSubject(subject);
+		em.flush();
 	}
 }

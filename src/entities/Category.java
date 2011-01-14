@@ -13,13 +13,12 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.sun.jersey.server.linking.Ref;
-
 @Entity
 @Table(name = "categories", uniqueConstraints = @UniqueConstraint(columnNames = { "name" }))
 @NamedQuery(name = "findAllCategories", query = "select c from Category c")
 public class Category {
-	@Ref("categories/{id}")
+	//@Ref("categories/{id}")
+	//URI uri;
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,5 +51,10 @@ public class Category {
 	
 	public String toString() {
 		return name == null ? "Okänd" : name;
+	}
+	
+	public void addSubject(Subject subject) {
+		subjects.add(subject);
+		subject.category = this;
 	}
 }
