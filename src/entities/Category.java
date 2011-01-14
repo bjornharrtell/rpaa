@@ -54,7 +54,7 @@ public class Category {
 	}
 	
 	public void addSubject(Subject subject) {
-		subjects.add(subject);
 		subject.category = this;
+		subjects.add(subject);
 	}
 }

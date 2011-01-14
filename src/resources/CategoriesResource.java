@@ -49,6 +49,7 @@ public class CategoriesResource {
 		Subject subject = em.find(Subject.class, subjectId);
 		
 		category.addSubject(subject);
+
 		em.flush();
 	}
 }

@@ -30,7 +30,7 @@ Grid.init = function() {
 	var user = null;
 
 	var formatStatusString = function(user) {
-		var status = 'Hej ' + user.principal + ', ';
+		var status = 'Välkommen ' + user.principal + ', ';
 
 		if (user.votesLeft === 0) {
 			status += ' tack för att du röstat :)';
@@ -330,7 +330,7 @@ Grid.init = function() {
 				tooltip : 'Ta över ansvaret för valt ämne',
 				disabled : true,
 				handler : function() {
-					selectedRecord.set("principal", user.principal);
+					selectedRecord.set('principal', user.principal);
 				}
 			}, {
 				ref : 'deleteButton',
