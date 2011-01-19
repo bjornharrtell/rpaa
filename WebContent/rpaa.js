@@ -3,6 +3,7 @@ Grid = {
 };
 
 Grid.categoriesStore = null;
+
 Grid.preload = function() {
 	Grid.categoriesStore = new Ext.data.JsonStore({
 		root : 'rows',
@@ -86,7 +87,7 @@ Grid.init = function() {
 			editable : false,
 			width : 34,
 			renderer : function(value) {
-				if (value === null) {
+				if (value === null || value === '') {
 					return "Ingen";
 				}
 				return Grid.categoriesStore.getById(value).get("name");
@@ -114,8 +115,8 @@ Grid.init = function() {
 				var subjectData = Ext.applyIf({
 					id : id,
 					category : category,
-					principal: user.principal,
-					votes: 0
+					principal : user.principal,
+					votes : 0
 				}, values);
 				var record = new store.recordType(subjectData);
 				store.add(record);
@@ -182,9 +183,8 @@ Grid.init = function() {
 			url : 'jaxrs/categories',
 			jsonData : values,
 			success : function(response) {
-				var record = new Grid.categoriesStore.recordType(Ext.apply({
-					id : parseInt(response.responseText)
-				}, values));
+				var id = parseInt(response.responseText);
+				var record = new Grid.categoriesStore.recordType(values, id);
 				Grid.categoriesStore.add(record);
 				form.reset();
 				window.hide();
@@ -227,6 +227,16 @@ Grid.init = function() {
 		topToolbar.principalSetButton.enable();
 		topToolbar.deleteButton.enable();
 		selectedRecord = r;
+
+		Ext.Ajax.request({
+			url : 'jaxrs/subjects/' + selectedRecord.id,
+			headers : {
+				'Accept' : 'text/plain'
+			},
+			success : function(response) {
+				viewport.description.setValue(response.responseText);
+			}
+		});
 	};
 
 	var onVote = function() {
@@ -242,7 +252,7 @@ Grid.init = function() {
 				if (user.votesLeft === 0) {
 					var topToolbar = viewport.grid.getTopToolbar();
 					topToolbar.voteButton.disable();
-					var bbar = viewport.grid.getBottomToolbar();
+					var bbar = viewport.vbox.getBottomToolbar();
 					bbar.statusLabel.setText(formatStatusString(user));
 				}
 			}
@@ -262,7 +272,7 @@ Grid.init = function() {
 				url : 'jaxrs/users/current',
 				success : function(response) {
 					user = Ext.decode(response.responseText);
-					var bbar = viewport.grid.getBottomToolbar();
+					var bbar = viewport.vbox.getBottomToolbar();
 					bbar.statusLabel.setText(formatStatusString(user));
 				}
 			});
@@ -271,87 +281,128 @@ Grid.init = function() {
 		var sm = viewport.grid.getSelectionModel();
 		sm.selectRow(sm.last, false);
 	};
-	
+
 	var onAfteredit = function(e) {
 		var record = e.record;
-		
+
 		Ext.Ajax.request({
 			url : 'jaxrs/subjects/' + record.id,
 			method : 'PUT',
-			jsonData: record.data,
+			jsonData : record.data,
 			success : function() {
-				
+
+			}
+		});
+	};
+
+	var onSave = function(field, newValue, oldValue) {
+		if (!selectedRecord) {
+			return;
+		}
+
+		var value = viewport.description.getValue();
+
+		Ext.Ajax.request({
+			url : 'jaxrs/subjects/' + selectedRecord.id,
+			method : 'PUT',
+			params : value,
+			headers : {
+				'Content-Type' : 'text/plain'
 			}
 		});
 	};
 
 	var viewport = new Ext.Viewport({
 		layout : 'fit',
-		items : [ {
-			ref : 'grid',
-			xtype : 'editorgrid',
-			border : false,
-			store : store,
-			colModel : colModel,
-			viewConfig : new Ext.grid.GroupingView({
-				forceFit : true,
-				markDirty : false
-			}),
-			sm : new Ext.grid.RowSelectionModel({
-				singleSelect : true,
-				listeners : {
-					rowselect : onRowselect
-				}
-			}),
-			listeners: {
-				'afteredit': onAfteredit
+
+		items : {
+			ref : 'vbox',
+			// layout : 'vbox',
+			layout : {
+				type : 'vbox',
+				align : 'stretch'
 			},
-			tbar : [ '-', {
-				iconCls : 'rpaa-action-subjectadd',
-				tooltip : 'Lägg till ämne',
-				handler : function() {
-					subjectAddWindow.show();
-				}
+			items : [ {
+				ref : '../grid',
+				xtype : 'editorgrid',
+				flex : 1,
+				border : false,
+				store : store,
+				colModel : colModel,
+				viewConfig : new Ext.grid.GroupingView({
+					forceFit : true,
+					markDirty : false
+				}),
+				sm : new Ext.grid.RowSelectionModel({
+					singleSelect : true,
+					listeners : {
+						rowselect : onRowselect
+					}
+				}),
+				listeners : {
+					'afteredit' : onAfteredit
+				},
+				tbar : [ '-', {
+					iconCls : 'rpaa-action-subjectadd',
+					tooltip : 'Lägg till ämne',
+					handler : function() {
+						subjectAddWindow.show();
+					}
+				}, {
+					iconCls : 'rpaa-action-categoryadd',
+					tooltip : 'Lägg till kategori',
+					handler : function() {
+						categoryAddWindow.show();
+					}
+				}, '-', {
+					ref : 'voteButton',
+					iconCls : 'rpaa-action-vote',
+					tooltip : 'Rösta på valt ämne',
+					disabled : true,
+					handler : onVote
+				}, {
+					ref : 'principalSetButton',
+					iconCls : 'rpaa-action-principalset',
+					tooltip : 'Ta över ansvaret för valt ämne',
+					disabled : true,
+					handler : function() {
+						selectedRecord.set('principal', user.principal);
+					}
+				}, {
+					ref : 'deleteButton',
+					iconCls : 'rpaa-action-delete',
+					tooltip : 'Ta bort valt ämne',
+					disabled : true,
+					handler : onDelete
+				} ]
 			}, {
-				iconCls : 'rpaa-action-categoryadd',
-				tooltip : 'Lägg till kategori',
-				handler : function() {
-					categoryAddWindow.show();
-				}
-			}, '-', {
-				ref : 'voteButton',
-				iconCls : 'rpaa-action-vote',
-				tooltip : 'Rösta på valt ämne',
-				disabled : true,
-				handler : onVote
-			}, {
-				ref : 'principalSetButton',
-				iconCls : 'rpaa-action-principalset',
-				tooltip : 'Ta över ansvaret för valt ämne',
-				disabled : true,
-				handler : function() {
-					selectedRecord.set('principal', user.principal);
-				}
-			}, {
-				ref : 'deleteButton',
-				iconCls : 'rpaa-action-delete',
-				tooltip : 'Ta bort valt ämne',
-				disabled : true,
-				handler : onDelete
+				title : 'Beskrivning',
+				xtype : 'form',
+				layout : 'fit',
+				border : false,
+				height : 120,
+				tools : [ {
+					id : 'save',
+					handler : onSave
+				} ],
+				items : [ {
+					ref : '../../description',
+					xtype : 'textarea'
+				} ]
 			} ],
 			bbar : [ '-', {
 				ref : 'statusLabel',
 				xtype : 'label',
 				text : ''
 			} ]
-		} ]
+		}
 	});
 
 	Ext.Ajax.request({
 		url : 'jaxrs/users/current',
 		success : function(response) {
 			user = Ext.decode(response.responseText);
-			var bbar = viewport.grid.getBottomToolbar();
+			var bbar = viewport.vbox.getBottomToolbar();
 			bbar.statusLabel.setText(formatStatusString(user));
 		}
 	});

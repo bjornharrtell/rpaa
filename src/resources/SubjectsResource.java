@@ -32,16 +32,36 @@ public class SubjectsResource {
 	private SecurityContext securityContext;
 
 	@GET
-	@Path("/{subjectid}")
+	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Subject getSubject(@PathParam("subjectid") String id) {
+	public Subject getSubject(@PathParam("id") String id) {
 		return em.find(Subject.class, Integer.parseInt(id));
+	}
+	
+	@GET
+	@Path("/{id}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public String getSubjectDescription(@PathParam("id") String id) {
+		Subject subject = em.find(Subject.class, Integer.parseInt(id));
+		
+		return subject.getDescription();
+	}
+	
+	@PUT
+	@Path("/{id}")
+	@Consumes(MediaType.TEXT_PLAIN)
+	public void updateSubjectDescription(@PathParam("id") String id, String html) throws JSONException {
+		Subject subject = em.find(Subject.class, Integer.parseInt(id));
+		
+		subject.setDescription(html);
+		
+		em.flush();
 	}
 
 	@PUT
-	@Path("/{subjectid}")
+	@Path("/{id}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public void updateSubject(@PathParam("subjectid") String id, JSONObject subjectData) throws JSONException {
+	public void updateSubject(@PathParam("id") String id, JSONObject subjectData) throws JSONException {
 		// TODO: make client PUT deserializable data		
 
 		Subject subject = em.find(Subject.class, Integer.parseInt(id));
@@ -55,8 +75,8 @@ public class SubjectsResource {
 	}
 
 	@DELETE
-	@Path("/{subjectid}")
-	public void deleteSubject(@PathParam("subjectid") String id) throws JSONException {
+	@Path("/{id}")
+	public void deleteSubject(@PathParam("id") String id) throws JSONException {
 		em.remove(em.find(Subject.class, Integer.parseInt(id)));
 		em.flush();
 	}

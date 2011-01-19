@@ -28,8 +28,11 @@ public class Subject {
 	@Column(unique = true, nullable = false)
 	String name;
 
-	@Column(unique = false, nullable = true)
+	@Column(nullable = true)
 	String principal;
+	
+	@Column(length=4096)
+	String description;
 	
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "category", nullable=true)
@@ -91,5 +94,15 @@ public class Subject {
 
 	public String getPrincipal() {
 		return principal;
+	}
+
+	@JsonIgnore
+	public void setDescription(String descriptionHtml) {
+		this.description = descriptionHtml;
+	}
+
+	@JsonIgnore
+	public String getDescription() {
+		return description;
 	}
 }
