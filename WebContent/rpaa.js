@@ -1,11 +1,11 @@
-Grid = {
+rpaa = {
 	version : '0.9.1'
 };
 
-Grid.categoriesStore = null;
+rpaa.categoriesStore = null;
 
-Grid.preload = function() {
-	Grid.categoriesStore = new Ext.data.JsonStore({
+rpaa.preload = function() {
+	rpaa.categoriesStore = new Ext.data.JsonStore({
 		root : 'rows',
 		fields : [ 'id', 'name' ],
 		autoLoad : true,
@@ -16,14 +16,14 @@ Grid.preload = function() {
 	});
 
 	var onLoad = function() {
-		Grid.init();
-		Grid.categoriesStore.un('load', onLoad);
+		rpaa.init();
+		rpaa.categoriesStore.un('load', onLoad);
 	};
 
-	Grid.categoriesStore.on('load', onLoad);
+	rpaa.categoriesStore.on('load', onLoad);
 };
 
-Grid.init = function() {
+rpaa.init = function() {
 
 	Ext.QuickTips.init();
 
@@ -90,7 +90,7 @@ Grid.init = function() {
 				if (value === null || value === '') {
 					return "Ingen";
 				}
-				return Grid.categoriesStore.getById(value).get("name");
+				return rpaa.categoriesStore.getById(value).get("name");
 			}
 		}, {
 			header : 'Röster',
@@ -159,7 +159,7 @@ Grid.init = function() {
 				xtype : 'combo',
 				fieldLabel : 'Kategori',
 				anchor : '95%',
-				store : Grid.categoriesStore,
+				store : rpaa.categoriesStore,
 				triggerAction : 'all',
 				valueField : 'id',
 				displayField : 'name',
@@ -184,8 +184,8 @@ Grid.init = function() {
 			jsonData : values,
 			success : function(response) {
 				var id = parseInt(response.responseText);
-				var record = new Grid.categoriesStore.recordType(values, id);
-				Grid.categoriesStore.add(record);
+				var record = new rpaa.categoriesStore.recordType(values, id);
+				rpaa.categoriesStore.add(record);
 				form.reset();
 				window.hide();
 			}
@@ -250,7 +250,7 @@ Grid.init = function() {
 				user.votesLeft = user.votesLeft - 1;
 
 				if (user.votesLeft === 0) {
-					var topToolbar = viewport.grid.getTopToolbar();
+					var topToolbar = viewport.rpaa.getTopToolbar();
 					topToolbar.voteButton.disable();
 					var bbar = viewport.vbox.getBottomToolbar();
 					bbar.statusLabel.setText(formatStatusString(user));
@@ -374,6 +374,8 @@ Grid.init = function() {
 					tooltip : 'Ta bort valt ämne',
 					disabled : true,
 					handler : onDelete
+				}, '->', {
+					text : 'RPÄA ' + rpaa.version
 				} ]
 			}, {
 				title : 'Beskrivning',
@@ -408,4 +410,4 @@ Grid.init = function() {
 	});
 };
 
-Ext.onReady(Grid.preload);
+Ext.onReady(rpaa.preload);
